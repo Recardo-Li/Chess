@@ -1,0 +1,2 @@
+# Preserve installed package bytes, including the files hashed by wheel RECORDs.
+/.venv/** -text

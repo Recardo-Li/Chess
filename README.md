@@ -26,6 +26,8 @@ LLM 支持 GPT 和 DeepSeek，双方都通过 HTTP API 调用；不需要浏览�
 
 ## 1. 安装依赖
 
+仓库附带开发机上的 Windows Python 3.13.5 虚拟环境快照 `.venv`。它引用 `D:\anaconda3` 并启用了系统包。在其他电脑上，建议在自己的 Python 环境里按下方命令安装依赖。
+
 需要 Python 3.10+。在项目目录运行：
 
 ```powershell
