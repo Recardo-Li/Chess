@@ -24,20 +24,34 @@ LLM 支持 GPT 和 DeepSeek，双方都通过 HTTP API 调用；不需要浏览�
 
 要接入另一种游戏，实现 `Environment` 的 `turns`、`validate`、`submit` 和 `finish`，在启动处传给同一个 `GameRunner`，为模型提供该游戏的 skill。要接入另一个 Agent，实现 `act` 并返回 `Decision` 即可。`tests/test_environment_contract.py` 用一个取筹码任务演示了同一环境接入 LLM 和本地策略两种方式。日常运行国际象棋评测仍使用 `python run.py` 和原有两份 YAML。
 
-## 1. 安装依赖
+## 1. 克隆后启动
 
-仓库附带开发机上的 Windows Python 3.13.5 虚拟环境快照 `.venv`。它引用 `D:\anaconda3` 并启用了系统包。在其他电脑上，建议在自己的 Python 环境里按下方命令安装依赖。
-
-需要 Python 3.10+。在项目目录运行：
-
-```powershell
-python -m pip install -r requirements.txt
-```
-
-首次克隆后，在项目目录用 PowerShell 从模板创建本地 Lichess 配置，已有配置可跳过这一步。
+**Windows 10/11 x64** 的解释器、项目依赖和 HTTPS 证书随仓库一起提供，克隆后可直接用。首次配置时，在项目目录用 PowerShell 复制 Lichess 模板，并在新文件的 `api_token` 中填写自己的 token。已有配置可以跳过复制。
 
 ```powershell
 Copy-Item Conifg/Lichess.example.yaml Conifg/Lichess.yaml
+```
+
+选好 `Conifg/LLM.yaml` 中的模型后，按终端情况启动。两种方式都会使用本仓库的解释器，并在需要时提示输入 LLM key。
+
+| 新电脑上的终端 | 开始对局 | 离线检查配置 |
+| --- | --- | --- |
+| 已能运行 `python`（Python 3.10+） | `python run.py` | `python run.py --check-config` |
+| 未安装 Python，或输入 `python` 打开了 Microsoft Store | `.\run.cmd` | `.\run.cmd --check-config` |
+
+如果新电脑没有系统 Python，但希望在当前 PowerShell 里使用 `python run.py`，可以先把随仓库提供的解释器加入这个终端的搜索路径。
+
+```powershell
+$env:Path = (Resolve-Path .\.venv\Scripts).Path + ';' + $env:Path
+python run.py
+```
+
+Windows 的 `.venv/Scripts/python.exe` 来自 Python 官方嵌入式发行版，依赖位于 `.venv/Lib/site-packages`，导入路径相对于仓库解析。PowerShell 通过 `PATH` 查找裸命令 `python`，所以没有该命令的电脑使用仓库内的 `.\run.cmd`。[Python Windows 发行包](https://www.python.org/downloads/release/python-31410/) · [PowerShell 命令查找规则](https://learn.microsoft.com/powershell/module/microsoft.powershell.core/about/about_command_precedence)
+
+**macOS 和 Linux** 使用本机 Python 3.10+。在自己的虚拟环境中安装依赖，再按上面的模板准备 `Conifg/Lichess.yaml`。
+
+```powershell
+python -m pip install -r requirements.txt
 python run.py --check-config
 ```
 
@@ -51,7 +65,7 @@ python run.py --check-config
 4. 如果账号尚未升级为 BOT，手动执行一次下面的命令。**升级不可逆**；不要对日常使用的账号操作。程序本身仅检查 BOT 身份，不会自动升级。[官方升级说明](https://lichess.org/api#tag/Bot/operation/botAccountUpgrade)
 
 ```powershell
-python -c "import requests,yaml; c=yaml.safe_load(open('Conifg/Lichess.yaml',encoding='utf-8')); r=requests.post(c['base_url'].rstrip('/')+'/api/bot/account/upgrade',headers={'Authorization':'Bearer '+c['api_token']},timeout=30); print('HTTP',r.status_code)"
+.\.venv\Scripts\python.exe -c "import requests,yaml; c=yaml.safe_load(open('Conifg/Lichess.yaml',encoding='utf-8')); r=requests.post(c['base_url'].rstrip('/')+'/api/bot/account/upgrade',headers={'Authorization':'Bearer '+c['api_token']},timeout=30); print('HTTP',r.status_code)"
 ```
 
 HTTP 200 表示成功；若不是 200，请查看官方升级条件及 token 权限。不要重复运行升级命令来解决登录问题。
@@ -182,9 +196,11 @@ Ctrl+C、非法走法、调用失败或步数上限会请求结束本局并保�
 
 ## 本地验证
 
+Windows 下可以直接使用打包的运行环境。
+
 ```powershell
-python run.py --check-config
-python -m unittest discover -s tests -v
+.\run.cmd --check-config
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
 测试使用模拟 API，不消耗 LLM 额度，也不会创建真实 Lichess 对局。`--check-config` 只检查本地格式和规则文件，不验证账号权限、余额、模型可用性或网络。真实端到端对战需要你填入两家的凭证后运行。

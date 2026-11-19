@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV 'D:\PythonProject\Chess\.venv'
+set -gx VIRTUAL_ENV (path resolve (path dirname (status filename))/..)
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"Scripts $PATH

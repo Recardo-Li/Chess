@@ -7,8 +7,37 @@ import getpass
 import math
 import os
 from pathlib import Path
+import subprocess
 import sys
 from urllib.parse import urlsplit
+
+ROOT = Path(__file__).resolve().parent
+
+
+def _launch_windows_runtime() -> None:
+    python = (ROOT / ".venv" / "Scripts" / "python.exe").resolve()
+    if Path(sys.executable).resolve() == python:
+        return
+    try:
+        child = subprocess.Popen([str(python), str(ROOT / "run.py"), *sys.argv[1:]])
+    except OSError as exc:
+        raise SystemExit(
+            f"无法启动项目自带的 Windows x64 Python（{exc.strerror}）。"
+            "请确认系统支持 x64 程序，并从仓库恢复完整的 .venv 目录。"
+        ) from None
+    while True:
+        try:
+            exit_code = child.wait()
+            break
+        except KeyboardInterrupt:
+            # The child shares this console and receives Ctrl+C too.
+            # Let it finish saving the game and return its own exit code.
+            continue
+    raise SystemExit(exit_code)
+
+
+if __name__ == "__main__" and os.name == "nt":
+    _launch_windows_runtime()
 
 import yaml
 
@@ -16,8 +45,6 @@ from chess_eval.chess_environment import ChessEnvironment
 from chess_eval.lichess_client import LichessClient, LichessError
 from chess_eval.llm_client import LLMClient
 from chess_eval.runner import GameRunner
-
-ROOT = Path(__file__).resolve().parent
 
 
 def read_yaml(path: Path) -> dict:

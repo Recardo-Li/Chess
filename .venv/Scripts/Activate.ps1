@@ -134,13 +134,12 @@ function Get-PyVenvConfig(
 ) {
     Write-Verbose "Given ConfigDir=$ConfigDir, obtain values in pyvenv.cfg"
 
-    # Ensure the file exists, and issue a warning if it doesn't (but still allow the function to continue).
-    $pyvenvConfigPath = Join-Path -Resolve -Path $ConfigDir -ChildPath 'pyvenv.cfg' -ErrorAction Continue
+    $pyvenvConfigPath = Join-Path -Path $ConfigDir -ChildPath 'pyvenv.cfg'
 
     # An empty map will be returned if no config file is found.
     $pyvenvConfig = @{ }
 
-    if ($pyvenvConfigPath) {
+    if (Test-Path -LiteralPath $pyvenvConfigPath -PathType Leaf) {
 
         Write-Verbose "File exists, parse `key = value` lines"
         $pyvenvConfigContent = Get-Content -Path $pyvenvConfigPath
