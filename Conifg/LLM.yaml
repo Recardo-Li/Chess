@@ -1,0 +1,35 @@
+# 被评测 LLM 的配置。此文件不保存 API key。
+# Key 可通过终端环境变量 OPENAI_API_KEY / DEEPSEEK_API_KEY 配置，
+# 或使用 python run.py --api-key "你的key"；未提供时在终端隐藏输入。
+# 隐藏输入可避免 key 出现在终端命令历史中。
+# provider: "gpt"
+# model: "gpt-5.4-mini"
+# base_url: "https://api.openai.com/v1"
+
+# 切换 DeepSeek 时，同时将上面三项改为：
+provider: "deepseek"
+model: "deepseek-flash"
+# DeepSeek 的严格工具调用要求 /beta；GPT 使用 https://api.openai.com/v1。
+base_url: "https://api.deepseek.com/beta"
+
+request_timeout: 120
+# 非法走法后的额外纠错次数；0 表示首次非法输出即评测失败。
+invalid_move_retries: 0
+# false：模型自行判断合法性；true：向模型提供合法走法列表。
+# 比较不同模型时应保持这一设置一致。
+include_legal_moves: true
+# true：每回合把合法走法作为严格 schema 的 enum；需同时开启 include_legal_moves。
+# GPT 使用 JSON Schema；DeepSeek 使用 Beta strict 工具调用。
+constrain_legal_moves: true
+
+# 按所选模型支持情况填写额外 Chat Completions 参数。
+# GPT 示例：{reasoning_effort: none, max_completion_tokens: 256}
+# DeepSeek 示例：{thinking: {type: disabled}, max_tokens: 256}
+# 留空时使用服务端默认值；不要在此处放入 key 或请求头。
+request_options: {thinking: {type: disabled}, reasoning_effort: low, max_tokens: 1000}
+
+# 以下路径相对于项目目录。每次请求都会包含这份基础棋规作为指令。
+skill_path: "skills/chess-rules/SKILL.md"
+output_dir: "outputs"
+# 每局最大半回合数（一方走一步为一个半回合）；达到上限提前结束评测。
+max_plies: 300

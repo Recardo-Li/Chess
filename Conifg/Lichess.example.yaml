@@ -1,0 +1,10 @@
+api_token: ""
+base_url: "https://lichess.org"
+level: 1
+color: "white"
+clock_limit: null
+clock_increment: 0
+days: 1
+request_timeout: 30
+stream_timeout: 90
+reconnect_attempts: 3
